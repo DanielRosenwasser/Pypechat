@@ -20,12 +20,12 @@ FunctionCall = TypedDict("FunctionCall", {
 
 # A simple value is a str, a float, a bool, None, a dict, or a list. Function calls and result
 # references can be nested in objects and arrays.
-SimpleValue = str | float | bool | None | dict[str, "Expression"] | list["Expression"]
+SimpleValue = str | int | float | bool | None | dict[str, "Expression"] | list["Expression"]
 
 # A result reference represents the value of an expression from a preceding step.
 ResultReference = TypedDict("ResultReference", {
     # Index of the previous expression in the "@steps" array
-    "@ref": float,
+    "@ref": int,
 })
 
 # An expression is a simple value, a function call, or a reference to the result of a preceding expression.

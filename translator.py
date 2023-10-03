@@ -27,8 +27,11 @@ class Model(Protocol):
 # TODO: just use the object_hook and some custom __str__s on `json.loads`
 def expr_to_text(expr: program.schema.Expression) -> str:
     match expr:
-        case { "@ref": float(index) }:
+        case { "@ref": int(index) }:
             return f"STEP{index + 1}"
+        case { "@ref": index }:
+            # TODO: provide an error while generating the program in these cases
+            return f"NON_INTEGRAL_REF"
         case { "@func": _ }:
             return call_to_text(cast(program.schema.FunctionCall, expr))
         case list():
@@ -36,9 +39,9 @@ def expr_to_text(expr: program.schema.Expression) -> str:
             return f"[{elements_str}]"
         case dict():
             elements_strs: list[str] = []
-            for k, v in expr.items():
-                k_str = json.dumps(expr) # no need to handle all expressions as keys
-                v_str = expr_to_text(v)
+            for key, value in expr.items():
+                k_str = json.dumps(key) # no need to handle all expressions as keys
+                v_str = expr_to_text(value)
                 elements_strs.append(f"{k_str}: {v_str}")
             elements_str = ", ".join(elements_strs)
             return f"{{{elements_str}}}"
@@ -144,16 +147,16 @@ class ProgramTranslator:
         request = self.create_request_prompt(request)
         num_repairs_attempted = 0
         while True:
-            json_text_response = self.model.complete(request)
-            if isinstance(json_text_response, Failure):
-                return json_text_response
+            text_response = self.model.complete(request)
+            if isinstance(text_response, Failure):
+                return text_response
 
-            json_text_response = json_text_response.value
-            first_curly = json_text_response.find("{")
-            last_curly = json_text_response.rfind("}") + 1
+            text_response = text_response.value
+            first_curly = text_response.find("{")
+            last_curly = text_response.rfind("}") + 1
             error_message: str
             if 0 <= first_curly < last_curly:
-                trimmed_response = json_text_response[first_curly:last_curly]
+                trimmed_response = text_response[first_curly:last_curly]
                 result = self.validator.validate(trimmed_response)
                 if isinstance(result, Success):
                     return result
@@ -163,7 +166,7 @@ class ProgramTranslator:
             if num_repairs_attempted >= self.max_repair_attempts:
                 return Failure(error_message)
             num_repairs_attempted += 1
-            request = f"{json_text_response}\n{self.create_repair_prompt(error_message)}"
+            request = f"{text_response}\n{self.create_repair_prompt(error_message)}"
 
 
     def create_request_prompt(self, intent: str) -> str:
@@ -193,7 +196,3 @@ class ProgramTranslator:
             The following is a revised JSON program object:
             """
         return dedent(prompt)
-
-
-class TypeChatError(RuntimeError):
-    ...
