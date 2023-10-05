@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import sys
 from typing import Any
 
-from translator import Failure, Model, ProgramTranslator, ProgramValidator, Result, Success, program_to_text
+from translator import Failure, Model, ProgramTranslator, ProgramValidator, Result, Success, TypedDictTranslator, TypedDictValidator, program_to_text
 
 import openai
 
@@ -26,8 +26,8 @@ class OpenAIModel(Model):
         except Exception as e:
             return Failure(str(e))
 
-import math_api
-with open(math_api.__file__, "r") as schema_file:
+import coffee_api
+with open(coffee_api.__file__, "r") as schema_file:
     api_schema = schema_file.read()
 
 model = OpenAIModel(
@@ -36,23 +36,20 @@ model = OpenAIModel(
 )
 
 def main():
-    validator = ProgramValidator(api_schema)
-    translator = ProgramTranslator(model, validator)
-    print("+> ", end="", flush=True)
+    validator = TypedDictValidator[coffee_api.Cart](api_schema, "Cart")
+    translator = TypedDictTranslator(model, validator)
+    print("☕> ", end="", flush=True)
     for line in sys.stdin:
         result = translator.translate(line)
         if isinstance(result, Failure):
             print("Translation Failed ❌")
             print(f"Context: {result.message}")
         else:
-            program = result.value
+            result = result.value
             print("Translation Succeeded! ✅\n")
             print("JSON View")
-            print(program)
-            print()
-            print("Program View")
-            print(program_to_text(program))
-        print("\n> ", end="", flush=True)
+            print(result)
+        print("\n☕> ", end="", flush=True)
 
 
 if __name__ == "__main__":
