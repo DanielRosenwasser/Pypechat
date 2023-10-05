@@ -24,7 +24,7 @@ SimpleValue = str | int | float | bool | None | dict[str, "Expression"] | list["
 
 # A result reference represents the value of an expression from a preceding step.
 ResultReference = TypedDict("ResultReference", {
-    # Index of the previous expression in the "@steps" array
+    # 0-based index of the previous expression in the "@steps" array
     "@ref": int,
 })
 

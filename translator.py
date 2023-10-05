@@ -132,7 +132,7 @@ class TypedDictTranslator(Generic[T]):
     model: Model
     validator: TypedDictValidator[T]
 
-    _max_repair_attempts = 3
+    _max_repair_attempts = 1
 
     def translate(self, request: str) -> Result[T]:
         request = self._create_request_prompt(request)
@@ -153,8 +153,8 @@ class TypedDictTranslator(Generic[T]):
                     return result
                 error_message = result.message
             else:
-                error_message = "Response did not contain any test resembling JSON."
-            # print(f"FAILURE FROM RESPONSE:\n```\n{text_response}\n```")
+                error_message = "Response did not contain any text resembling JSON."
+            # print(f"FAILURE FROM RESPONSE:\n```\n{text_response}\n```\n\n{error_message}\n\n")
             if num_repairs_attempted >= self._max_repair_attempts:
                 return Failure(error_message)
             num_repairs_attempted += 1
