@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import sys
 from typing import Any
 
-from translator import Failure, Model, ProgramTranslator, ProgramValidator, Result, Success, TypedDictTranslator, TypedDictValidator, program_to_text
+from translator import Failure, Model, Result, Success, TypedDictTranslator, TypedDictValidator
 
 import openai
 
@@ -16,7 +16,8 @@ class OpenAIModel(Model):
 
     def complete(self, input: str) -> Result[str]:
         try:
-            response: Any = openai.ChatCompletion.create(
+            ChatCompletion: Any = openai.ChatCompletion
+            response: Any = ChatCompletion.create(
                 model=self.model_name,
                 api_key=self.api_key,
                 messages=[{"role": "user", "content": input}],

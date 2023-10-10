@@ -16,7 +16,8 @@ class OpenAIModel(Model):
 
     def complete(self, input: str) -> Result[str]:
         try:
-            response: Any = openai.ChatCompletion.create(
+            ChatCompletion: Any = openai.ChatCompletion
+            response = ChatCompletion.create(
                 model=self.model_name,
                 api_key=self.api_key,
                 messages=[{"role": "user", "content": input}],
