@@ -85,14 +85,7 @@ def program_to_text(p: program.schema.Program):
     return f"def fn(api: API):{all_steps_str}"
 
 class _SingleFileChecker:
-    f = tempfile.NamedTemporaryFile(mode="r+", encoding="utf8", delete=False)
-    def __init__(self) -> None:
-        mypy.api.run_dmypy(["run"])
-        mypy.api.run_dmypy(["check", self.f.name])
-
-    def __del__(self) -> None:
-        mypy.api.run_dmypy(["stop", self.f.name])
-        self.f.close()
+    f = tempfile.NamedTemporaryFile(mode="r+", encoding="utf8")
 
     def check(self, file_contents: str) -> Result[None]:
         self.f.truncate(0)
@@ -100,7 +93,7 @@ class _SingleFileChecker:
         self.f.write(file_contents)
         self.f.write("\n")
         self.f.flush()
-        mypy_stdout, _mypy_stderr, exit_status = mypy.api.run_dmypy(["check", self.f.name])
+        mypy_stdout, _mypy_stderr, exit_status = mypy.api.run([self.f.name])
         if exit_status != 0:
             return Failure(mypy_stdout)
         return Success(None)
