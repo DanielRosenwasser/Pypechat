@@ -120,7 +120,8 @@ class TypedDictValidator(Generic[T]):
         err_text = f"JSON Text was:\n{json_text}\nand constructed program was:\n{program_text or 'NOT_SET'}\n\nCheck result was {check_result.message}"
         return Failure(err_text)
 
-@dataclass
+
+@dataclass(frozen=True)
 class TypedDictTranslator(Generic[T]):
     model: Model
     validator: TypedDictValidator[T]
@@ -180,7 +181,7 @@ class TypedDictTranslator(Generic[T]):
         return dedent(prompt)
 
 @dataclass
-class ProgramValidator:
+class ProgramValidator(TypedDictValidator[program.schema.Program]):
     schema: str
     _checker = _SingleFileChecker()
 
@@ -208,7 +209,7 @@ class ProgramValidator:
 with open(program.schema.__file__, "r") as f:
     program_schema = f.read()
 
-@dataclass
+@dataclass(frozen=True)
 class ProgramTranslator(TypedDictTranslator[program.schema.Program]):
     model: Model
     validator: ProgramValidator
