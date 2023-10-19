@@ -26,7 +26,7 @@ class Model(Protocol):
         ...
 
 # TODO: just use the object_hook and some custom __str__s on `json.loads`
-def expr_to_text(expr: program.schema.Expression, for_program) -> str:
+def expr_to_text(expr: program.schema.Expression, for_program: bool) -> str:
     match expr:
         case { "@ref": int(index) } if for_program:
             return f"STEP{index + 1}"
@@ -188,7 +188,13 @@ class ProgramValidator:
         program_text = None
         try:
             typed_dict = json.loads(json_text)
-            program_text = program_to_text(typed_dict)
+            match typed_dict:
+                case { "@steps": list() }:
+                    program_text = program_to_text(cast(program.schema.Program, typed_dict))
+                case { "@steps": list() }:
+                    raise TypeError("The result is not a valid program because '@steps' was not a list.")
+                case _:
+                    raise TypeError("The result is not a valid program because it did not have a '@steps' property.")
             program_text = f"{self.schema}\n{program_text}"
             check_result = self._checker.check(program_text)
         except Exception as err:
