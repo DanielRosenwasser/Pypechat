@@ -98,7 +98,6 @@ class _SingleFileChecker:
             return Failure(mypy_stdout)
         return Success(None)
 
-
 @dataclass
 class TypedDictValidator(Generic[T]):
     schema: str
@@ -182,8 +181,9 @@ class TypedDictTranslator(Generic[T]):
 
 @dataclass
 class ProgramValidator(TypedDictValidator[program.schema.Program]):
-    schema: str
-    _checker = _SingleFileChecker()
+
+    def __init__(self, schema: str):
+        super().__init__(schema, "API")
 
     def validate(self, json_text: str) -> Result[program.schema.Program]:
         program_text = None
@@ -192,7 +192,7 @@ class ProgramValidator(TypedDictValidator[program.schema.Program]):
             match typed_dict:
                 case { "@steps": list() }:
                     program_text = program_to_text(cast(program.schema.Program, typed_dict))
-                case { "@steps": list() }:
+                case { "@steps": _ }:
                     raise TypeError("The result is not a valid program because '@steps' was not a list.")
                 case _:
                     raise TypeError("The result is not a valid program because it did not have a '@steps' property.")
