@@ -185,6 +185,7 @@ class ProgramValidator(TypedDictValidator[program.schema.Program]):
     def __init__(self, schema: str):
         super().__init__(schema, "API")
 
+    @override
     def validate(self, json_text: str) -> Result[program.schema.Program]:
         program_text = None
         try:

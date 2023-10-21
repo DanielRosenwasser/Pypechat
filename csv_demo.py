@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 import sys
 from typing import Any
+from typing_extensions import override
 
-from translator import Failure, Model, ProgramTranslator, ProgramValidator, Result, Success, program_to_text
+from typechat import Failure, Model, ProgramTranslator, ProgramValidator, Result, Success, program_to_text
 
 import openai
 
@@ -14,6 +15,7 @@ class OpenAIModel(Model):
     model_name: str
     api_key: str
 
+    @override
     def complete(self, input: str) -> Result[str]:
         try:
             ChatCompletion: Any = openai.ChatCompletion
