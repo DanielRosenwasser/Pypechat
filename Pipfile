@@ -7,6 +7,7 @@ name = "pypi"
 openai = "*"
 mypy = "*"
 python-dotenv = "*"
+typing-extensions = "*"
 
 [dev-packages]
 
